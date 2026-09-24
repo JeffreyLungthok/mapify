@@ -158,6 +158,26 @@ details.sub[open]>summary{margin-bottom:10px}
 .foot a{color:inherit}
 .linkbtn{border:0;background:none;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12px;justify-self:start}
 
+.homes{display:grid;gap:8px}
+.home-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
+.home-badge{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 12px/1 var(--mono);background:var(--chip-on);color:var(--chip-on-ink)}
+.home-row.set .home-badge{background:var(--accent);color:var(--accent-ink)}
+.search.mini input{height:38px;font-size:14px;padding-left:12px;background-image:none}
+.btn.small{height:38px;font-size:12.5px;padding-inline:10px;white-space:nowrap}
+.btn[aria-pressed=true]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
+.btn:disabled{cursor:default}
+.route-actions{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px}
+.route-actions .btn{height:40px;font-size:13px;padding-inline:8px}
+.colrow{display:flex;gap:8px;align-items:center}
+.colrow input[type=color]{width:38px;height:30px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer;flex:none}
+.colrow input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.colrow input[type=color]::-webkit-color-swatch{border:0;border-radius:5px}
+.modebar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;background:var(--ink);color:var(--panel);border-radius:999px;padding:6px 6px 6px 14px;font-size:12.5px;box-shadow:0 8px 22px -10px rgba(0,0,0,.5);max-width:calc(100% - 24px)}
+.modebar span{min-width:0}
+.modebar button{flex:none;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:12.5px;padding:7px 12px;cursor:pointer}
+#poster.editing{cursor:crosshair}
+.modebar:not([hidden]) ~ .status{bottom:64px}
+
 /* ---------- stage ---------- */
 .stage{position:relative;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);min-width:0;min-height:0;background:var(--wall, var(--wall-auto));transition:background-color .35s}
 .stage-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px 0}
@@ -234,6 +254,58 @@ details.sub[open]>summary{margin-bottom:10px}
         <div class="field">
           <div class="field-h"><label for="roadScale">Road weight</label><output data-out="roadScale"></output></div>
           <input type="range" id="roadScale" data-key="roadScale" data-fmt="x" min="0.4" max="2.4" step="0.05">
+        </div>
+      </div>
+    </details>
+
+    <details class="sec" open id="sec-route">
+      <summary><span class="sec-t">Two homes &amp; your way</span><span class="sec-v" id="v-route"></span></summary>
+      <div class="sec-b">
+        <div class="homes">
+          <div class="home-row">
+            <span class="home-badge" aria-hidden="true">A</span>
+            <div class="search mini"><input type="text" id="homeA" placeholder="Address of home A" autocomplete="off" spellcheck="false" aria-label="Address of home A"><ul class="results" role="listbox" hidden></ul></div>
+            <button type="button" class="btn small" data-place="0">Tap on map</button>
+          </div>
+          <div class="home-row">
+            <span class="home-badge" aria-hidden="true">B</span>
+            <div class="search mini"><input type="text" id="homeB" placeholder="Address of home B" autocomplete="off" spellcheck="false" aria-label="Address of home B"><ul class="results" role="listbox" hidden></ul></div>
+            <button type="button" class="btn small" data-place="1">Tap on map</button>
+          </div>
+        </div>
+        <div class="route-actions">
+          <button type="button" class="btn" id="drawBtn" aria-pressed="false">Draw the way</button>
+          <button type="button" class="btn" id="undoBtn">Undo</button>
+          <button type="button" class="btn" id="clearBtn">Clear</button>
+        </div>
+        <p class="note" id="routeHint">Set both homes, then tap along the way you walk. Drag a point to move it, tap it to remove it.</p>
+        <div class="field">
+          <div class="field-h"><span>Line style</span></div>
+          <div class="seg" data-seg="routeStyle"><button type="button" data-v="worn">Worn path</button><button type="button" data-v="bold">Bold</button><button type="button" data-v="steps">Footsteps</button><button type="button" data-v="dots">Dots</button></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <div class="field-h"><label for="routeWeight">Weight</label><output data-out="routeWeight"></output></div>
+            <input type="range" id="routeWeight" data-key="routeWeight" data-fmt="x" min="0.4" max="2.5" step="0.05">
+          </div>
+          <div class="field">
+            <div class="field-h"><label for="routeColor">Colour</label></div>
+            <div class="colrow"><input type="color" id="routeColor"><button type="button" class="chip" id="routeColorAuto">Match palette</button></div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-h"><span>Home markers</span></div>
+          <div class="seg" data-seg="homeStyle"><button type="button" data-v="house">House</button><button type="button" data-v="heart">Heart</button><button type="button" data-v="dot">Dot</button></div>
+        </div>
+        <div class="two">
+          <div class="field"><div class="field-h"><label for="nameA">Label at A</label></div><input type="text" id="nameA" placeholder="optional"></div>
+          <div class="field"><div class="field-h"><label for="nameB">Label at B</label></div><input type="text" id="nameB" placeholder="optional"></div>
+        </div>
+        <div class="chips">
+          <button type="button" class="chip" data-toggle="routeOn">Show on poster</button>
+          <button type="button" class="chip" data-toggle="routeSmooth">Round corners</button>
+          <button type="button" class="chip" data-toggle="showRouteLen">Length in details</button>
+          <button type="button" class="chip ghost" id="fitRoute">Fit map to the way</button>
         </div>
       </div>
     </details>
@@ -386,6 +458,7 @@ details.sub[open]>summary{margin-bottom:10px}
     </div>
     <div class="wall" id="wall">
       <canvas id="poster" tabindex="0" role="img" aria-label="Poster preview"></canvas>
+      <div class="modebar" id="modeBar" hidden><span id="modeText"></span><button type="button" id="modeDone">Done</button></div>
       <div class="status" id="status" hidden></div>
       <div class="notice" id="notice" hidden>
         <p id="noticeText"></p>
@@ -426,9 +499,12 @@ const PALETTES = [
   {id:'messing', name:'Messing', bg:'#0F1B2D', water:'#091220', green:'#122036', ice:'#15243B', buildings:'#18273F', road:'#DDB66C', minor:'#B3935A', path:'#6D6148', rail:'#9D8352', contour:'#15253C', text:'#E6C680'},
   {id:'landeskarte', name:'Landeskarte', bg:'#F8F6EF', water:'#9FCDEB', green:'#CFE2B4', ice:'#FFFFFF', buildings:'#A89A8C', road:'#C53F29', minor:'#595959', path:'#8C7B69', rail:'#2E2E2E', contour:'#D8B98E', text:'#262626'}
 ];
+const ACCENTS = {kreide:'#C8412C', nacht:'#F2B84B', blaupause:'#FFCF5C', alpen:'#1F5C63', gletscher:'#D1495B', wald:'#E9A23B', rot:'#141414',
+  terrakotta:'#2F5D62', tusche:'#D52B1E', lavendel:'#E0607E', messing:'#F5EBDD', landeskarte:'#B0126B'};
+PALETTES.forEach(p => { p.accent = ACCENTS[p.id]; });
 const COLOR_KEYS = [
   ['bg','Paper'],['text','Text'],['water','Water'],['green','Forest & parks'],['buildings','Buildings'],['ice','Glaciers'],
-  ['road','Main roads'],['minor','Streets'],['path','Paths'],['rail','Railways'],['contour','Contours']
+  ['road','Main roads'],['minor','Streets'],['path','Paths'],['rail','Railways'],['contour','Contours'],['accent','Your way']
 ];
 
 const FONTS = [
@@ -508,7 +584,9 @@ const DEFAULTS = {
   showCoords:true, coordFormat:'dec', showElev:true, showScale:false, scalebar:false, credit:true,
   layout:'fade', paper:'A3', orient:'portrait', margin:0, hairline:false, fade:true,
   frame:'none', mat:8, wall:'auto',
-  dpi:300, exportFrame:false, fontTouched:false
+  dpi:300, exportFrame:false, fontTouched:false,
+  homes:[null, null], names:['', ''], route:[], routeOn:true, routeStyle:'worn', routeWeight:1, routeSmooth:true, routeColor:null,
+  homeStyle:'house', showRouteLen:false
 };
 
 let S = clone(DEFAULTS);
@@ -856,7 +934,7 @@ function drawMap(ctx, X, Y, geo, P, mode){
   const v = mapView(box);
   const z = chooseZoom(v);
   const R = tileRange(v, z);
-  if(mode === 'preview'){ lastMap = {k:v.k}; setNeeded(R); }
+  if(mode === 'preview'){ lastMap = {k:v.k, bx, by, left:v.left, top:v.top}; setNeeded(R); }
   const zf = clamp(Math.pow(4/S.extentKm, 0.55), 0.35, 1.6);
   const place = (tz, tx, ty) => { const n = 2**tz; return {ox: bx + (tx/n - v.left)*v.k, oy: by + (ty/n - v.top)*v.k, size: v.k/n}; };
 
@@ -887,6 +965,7 @@ function drawMap(ctx, X, Y, geo, P, mode){
     ctx.restore();
   }
   drawTiles(ctx, list, P, u, zf);
+  drawRoute(ctx, {x:bx, y:by, w:box.w, h:box.h}, v, P, u, mode);
   ctx.restore();
   return v;
 }
@@ -930,6 +1009,7 @@ function infoParts(geo, pxPerMm){
   if(S.showCoords) parts.push(fmtCoords(lat, lon));
   if(S.showElev && elev != null) parts.push(`${Math.round(elev)} m`);
   if(S.showScale){ const mapMm = geo.map.w/pxPerMm; parts.push(`1:${swissNum(niceRatio(S.extentKm*1e6/mapMm))}`); }
+  if(S.showRouteLen){ const m = routeMeters(); if(m > 0) parts.push(fmtLen(m)); }
   return parts;
 }
 function scaleBar(geo, maxLen = Infinity){
@@ -1243,8 +1323,8 @@ function updateInfo(){
 /* =========================================================================
    Place search (swisstopo SearchServer)
    ========================================================================= */
-const KIND_LABEL = {settlement:'Town · village', municipality:'Municipality', postcode:'Postcode', place:'Place'};
-const KIND_RANK = {settlement:0, municipality:1, postcode:2, place:3};
+const KIND_LABEL = {settlement:'Town · village', municipality:'Municipality', postcode:'Postcode', place:'Place', address:'Address'};
+const KIND_RANK = {settlement:0, municipality:1, postcode:2, place:3, address:0};
 function parseResult(r){
   const a = r && r.attrs || {};
   if(typeof a.lat !== 'number' || typeof a.lon !== 'number') return null;
@@ -1265,8 +1345,8 @@ function parseResult(r){
   let bbox = null;
   const bm = String(a.geom_st_box2d || '').match(/BOX\(([-\d.]+) ([-\d.]+),\s*([-\d.]+) ([-\d.]+)\)/);
   if(bm){ const v = bm.slice(1).map(Number); if(Math.abs(v[0]) <= 180 && Math.abs(v[1]) <= 90) bbox = v; }
-  const kind = a.origin === 'gg25' ? 'municipality' : a.origin === 'zipcode' ? 'postcode' : a.objectclass === 'TLM_SIEDLUNGSNAME' ? 'settlement' : 'place';
-  return {origin:a.origin, oc:a.objectclass || '', kind, name: name || plain, canton, muni, zip, lat:a.lat, lon:a.lon, bbox};
+  const kind = a.origin === 'address' ? 'address' : a.origin === 'gg25' ? 'municipality' : a.origin === 'zipcode' ? 'postcode' : a.objectclass === 'TLM_SIEDLUNGSNAME' ? 'settlement' : 'place';
+  return {origin:a.origin, oc:a.objectclass || '', kind, name: name || plain, label: plain, canton, muni, zip, lat:a.lat, lon:a.lon, bbox};
 }
 const IS_LOCAL = !/^https?:$/.test(location.protocol);
 // JSON from the geo.admin.ch API; falls back to JSONP (script tag) if fetch is refused
@@ -1406,7 +1486,7 @@ async function fetchElevation(){
    Map interaction on the preview
    ========================================================================= */
 const pointers = new Map();
-let gesture = null, settleTimer = null;
+let gesture = null, settleTimer = null, down = null;
 function setExtent(v){ S.extentKm = clamp(v, 0.4, 40); syncExtent(); requestRender(); }
 function onViewSettled(){ clearTimeout(settleTimer); settleTimer = setTimeout(() => { save(); scheduleElevation(0); }, 350); }
 function startGesture(){
@@ -1418,11 +1498,23 @@ canvas.addEventListener('pointerdown', e => {
   if(S.cx == null || !lastMap) return;
   canvas.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if(pointers.size === 1){
+    down = {x:e.clientX, y:e.clientY, t:performance.now(), cx:S.cx, cy:S.cy, moved:false};
+    const h = editMode ? hitHandle(e) : null;
+    if(h){ snapshot(); gesture = {mode:'handle', h}; canvas.classList.add('dragging'); return; }
+  } else if(down) down.moved = true;
   canvas.classList.add('dragging'); startGesture();
 });
 canvas.addEventListener('pointermove', e => {
   if(!pointers.has(e.pointerId) || !gesture) return;
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if(down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) down.moved = true;
+  if(gesture.mode === 'handle'){
+    if(!down || !down.moved) return;
+    const ll = eventToLatLon(e), h = gesture.h;
+    if(h.type === 'wp') S.route[h.i] = ll; else S.homes[h.i] = Object.assign({}, S.homes[h.i], {lat:ll[0], lon:ll[1], label:''});
+    requestRender(); return;
+  }
   const ratio = canvas.width / canvas.clientWidth;
   const pts = [...pointers.values()];
   if(gesture.mode === 'pan'){
@@ -1439,8 +1531,19 @@ canvas.addEventListener('pointermove', e => {
 });
 function endPointer(e){
   if(!pointers.has(e.pointerId)) return;
+  const single = pointers.size === 1;
   pointers.delete(e.pointerId);
-  if(pointers.size) startGesture(); else { gesture = null; canvas.classList.remove('dragging'); onViewSettled(); }
+  if(gesture && gesture.mode === 'handle'){
+    if(down && !down.moved){
+      if(gesture.h.type === 'wp' && editMode === 'path') S.route.splice(gesture.h.i, 1);
+      else undoStack.pop();
+    }
+    gesture = null; down = null; canvas.classList.remove('dragging'); routeChanged(); return;
+  }
+  const tap = single && down && !down.moved && e.type === 'pointerup' && performance.now() - down.t < 700;
+  if(pointers.size) startGesture(); else { gesture = null; canvas.classList.remove('dragging'); }
+  if(tap && editMode){ S.cx = down.cx; S.cy = down.cy; handleTap(e); }
+  if(!pointers.size){ down = null; onViewSettled(); }
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
@@ -1757,7 +1860,7 @@ for(const name of TRY){
   tryEl.appendChild(b);
 }
 $('#resetBtn').onclick = () => {
-  const keep = {place:S.place, cx:S.cx, cy:S.cy, extentKm:S.extentKm};
+  const keep = {place:S.place, cx:S.cx, cy:S.cy, extentKm:S.extentKm, homes:S.homes, names:S.names, route:S.route};
   S = Object.assign(clone(DEFAULTS), keep);
   syncUI(); save(); layoutPreview();
 };
@@ -1788,8 +1891,344 @@ function syncUI(){
   if(document.activeElement !== subEl) subEl.value = S.subtitle;
   titleEl.placeholder = S.place ? `${S.place.name} (place name)` : 'Uses the place name';
   buildSubChips();
+  syncRouteUI();
   updateInfo();
 }
+
+/* =========================================================================
+   Two homes and the way between them
+   ========================================================================= */
+function routeColor(){ return S.routeColor || pal().accent || '#C8412C'; }
+// Every point of the way in order: home A, drawn points, home B (as [lat, lon])
+function routeLatLon(){
+  const pts = [];
+  if(S.homes[0]) pts.push([S.homes[0].lat, S.homes[0].lon]);
+  for(const p of S.route) pts.push(p);
+  if(S.homes[1]) pts.push([S.homes[1].lat, S.homes[1].lon]);
+  return pts;
+}
+function haversine(a, b){
+  const R = 6371008.8, r = Math.PI/180, dLat = (b[0]-a[0])*r, dLon = (b[1]-a[1])*r;
+  const h = Math.sin(dLat/2)**2 + Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function routeMeters(){ const p = routeLatLon(); let m = 0; for(let i = 1; i < p.length; i++) m += haversine(p[i-1], p[i]); return m; }
+function fmtLen(m){ return m >= 1000 ? `${(m/1000).toFixed(m >= 10000 ? 0 : 1)} km` : `${Math.round(m/10)*10} m`; }
+
+// Keeps the drawn segments straight (they follow streets) and rounds each corner
+function roundCorners(pts, radius){
+  if(pts.length < 3) return pts.slice();
+  const out = [pts[0]];
+  for(let i = 1; i < pts.length - 1; i++){
+    const a = pts[i-1], b = pts[i], c = pts[i+1];
+    const l1 = Math.hypot(b[0]-a[0], b[1]-a[1]), l2 = Math.hypot(c[0]-b[0], c[1]-b[1]);
+    if(!l1 || !l2){ out.push(b); continue; }
+    const r = Math.min(radius, l1*0.45, l2*0.45);
+    const p = [b[0] + (a[0]-b[0])/l1*r, b[1] + (a[1]-b[1])/l1*r], q = [b[0] + (c[0]-b[0])/l2*r, b[1] + (c[1]-b[1])/l2*r];
+    out.push(p);
+    for(let k = 1; k < 10; k++){ const t = k/10, m = 1 - t; out.push([m*m*p[0] + 2*m*t*b[0] + t*t*q[0], m*m*p[1] + 2*m*t*b[1] + t*t*q[1]]); }
+    out.push(q);
+  }
+  out.push(pts[pts.length-1]);
+  return out;
+}
+// Evenly spaced samples with tangent, normal and distance along the line
+function resample(poly, step){
+  const out = [];
+  if(poly.length < 2) return out;
+  let s = 0, carry = 0;
+  const push = (x, y, tx, ty, d) => out.push({x, y, tx, ty, nx:-ty, ny:tx, s:d});
+  for(let i = 1; i < poly.length; i++){
+    const a = poly[i-1], b = poly[i], len = Math.hypot(b[0]-a[0], b[1]-a[1]);
+    if(!len) continue;
+    const tx = (b[0]-a[0])/len, ty = (b[1]-a[1])/len;
+    if(!out.length) push(a[0], a[1], tx, ty, 0);
+    let d = step - carry;
+    while(d <= len){ push(a[0] + tx*d, a[1] + ty*d, tx, ty, s + d); d += step; }
+    carry = len - (d - step); s += len;
+  }
+  const a = poly[poly.length-2], b = poly[poly.length-1], len = Math.hypot(b[0]-a[0], b[1]-a[1]) || 1;
+  push(b[0], b[1], (b[0]-a[0])/len, (b[1]-a[1])/len, s);
+  // smooth the tangents a little so offsets do not kink at corners
+  for(let i = 1; i < out.length - 1; i++){
+    let tx = out[i-1].tx + out[i].tx*2 + out[i+1].tx, ty = out[i-1].ty + out[i].ty*2 + out[i+1].ty; const l = Math.hypot(tx, ty) || 1;
+    out[i].nx = -ty/l; out[i].ny = tx/l; out[i].tx = tx/l; out[i].ty = ty/l;
+  }
+  return out;
+}
+function strokeSamples(ctx, sm, off){
+  ctx.beginPath();
+  sm.forEach((p, i) => { const o = off ? off(p) : 0, x = p.x + p.nx*o, y = p.y + p.ny*o; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.stroke();
+}
+function homeShape(style, s){
+  const p = new Path2D();
+  if(style === 'heart'){
+    p.moveTo(0, 0.42*s);
+    p.bezierCurveTo(-0.62*s, 0.02*s, -0.42*s, -0.62*s, 0, -0.28*s);
+    p.bezierCurveTo(0.42*s, -0.62*s, 0.62*s, 0.02*s, 0, 0.42*s);
+  } else if(style === 'dot'){
+    p.arc(0, 0, 0.36*s, 0, Math.PI*2);
+  } else {
+    p.moveTo(-0.4*s, 0.42*s); p.lineTo(-0.4*s, -0.06*s); p.lineTo(0, -0.46*s); p.lineTo(0.4*s, -0.06*s); p.lineTo(0.4*s, 0.42*s); p.closePath();
+  }
+  return p;
+}
+function drawHome(ctx, x, y, s, style, col, bg){
+  ctx.save(); ctx.translate(x, y);
+  const p = homeShape(style, s);
+  ctx.lineJoin = 'round'; ctx.lineWidth = 0.26*s; ctx.strokeStyle = bg; ctx.stroke(p);
+  ctx.fillStyle = col; ctx.fill(p);
+  ctx.fillStyle = bg;
+  if(style === 'house') ctx.fillRect(-0.09*s, 0.14*s, 0.18*s, 0.28*s);
+  else if(style === 'dot'){ ctx.beginPath(); ctx.arc(0, 0, 0.13*s, 0, Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+function haloText(ctx, fontFn, size, text, x, y, align, fill, halo){
+  const k = size/TK;
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+  ctx.font = fontFn(TK); ctx.textAlign = align; ctx.lineJoin = 'round';
+  ctx.strokeStyle = halo; ctx.lineWidth = TK*0.32; ctx.strokeText(text, 0, 0);
+  ctx.fillStyle = fill; ctx.fillText(text, 0, 0);
+  ctx.restore();
+}
+function drawRoute(ctx, box, v, P, u, mode){
+  const ll = routeLatLon();
+  if(!ll.length) return;
+  const toPx = p => [box.x + (lon2x(p[1]) - v.left)*v.k, box.y + (lat2y(p[0]) - v.top)*v.k];
+  const pts = ll.map(toPx);
+  const col = routeColor(), W = S.routeWeight;
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if(S.routeOn && pts.length >= 2){
+    const line = S.routeSmooth ? roundCorners(pts, 3*u*W) : pts;
+    const sm = resample(line, 0.3*u);
+    const L = sm.length ? sm[sm.length-1].s : 0;
+    if(sm.length > 1){
+      const style = S.routeStyle;
+      if(style === 'bold'){
+        ctx.strokeStyle = P.bg; ctx.lineWidth = 1.5*u*W; strokeSamples(ctx, sm);
+        ctx.strokeStyle = col; ctx.lineWidth = 0.9*u*W; strokeSamples(ctx, sm);
+      } else if(style === 'worn'){
+        ctx.strokeStyle = rgba(P.bg, 0.88); ctx.lineWidth = 2.5*u*W; strokeSamples(ctx, sm);
+        const rnd = mulberry(20240924), taper = 5*u;
+        ctx.strokeStyle = col;
+        for(let i = 0; i < 28; i++){
+          const amp = (0.15 + 0.85*rnd())*1.05*u*W, l1 = (5 + rnd()*10)*u, l2 = (1.4 + rnd()*3)*u, f1 = rnd()*6.28, f2 = rnd()*6.28, bias = (rnd() - 0.5)*0.5*u*W;
+          ctx.globalAlpha = 0.16 + rnd()*0.2; ctx.lineWidth = (0.05 + rnd()*0.1)*u*W;
+          strokeSamples(ctx, sm, p => Math.min(1, p.s/taper, (L - p.s)/taper) * (bias + amp*(0.65*Math.sin(p.s/l1 + f1) + 0.35*Math.sin(p.s/l2 + f2))));
+        }
+        ctx.globalAlpha = 0.95; ctx.lineWidth = 0.2*u*W; strokeSamples(ctx, sm);
+        ctx.globalAlpha = 1;
+      } else if(style === 'steps'){
+        const stride = 2.6*u*W, side = 0.55*u*W, fl = 1.4*u*W, fw = 0.58*u*W;
+        ctx.fillStyle = col;
+        let left = true, j = 0;
+        for(let d = stride*0.9; d < L - stride*0.6; d += stride, left = !left){
+          while(j < sm.length - 1 && sm[j+1].s < d) j++;
+          const a = sm[j], b = sm[Math.min(j+1, sm.length-1)], f = b.s > a.s ? (d - a.s)/(b.s - a.s) : 0;
+          const x = a.x + (b.x - a.x)*f, y = a.y + (b.y - a.y)*f, o = left ? -side : side;
+          ctx.save(); ctx.translate(x + a.nx*o, y + a.ny*o); ctx.rotate(Math.atan2(a.ty, a.tx));
+          ctx.beginPath(); ctx.ellipse(fl*0.16, 0, fl*0.34, fw*0.5, 0, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(-fl*0.36, 0, fl*0.17, fw*0.42, 0, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+      } else {
+        const gap = 1.4*u*W, r = 0.38*u*W;
+        ctx.fillStyle = col;
+        let j = 0;
+        for(let d = 0; d <= L; d += gap){
+          while(j < sm.length - 1 && sm[j+1].s < d) j++;
+          const a = sm[j], b = sm[Math.min(j+1, sm.length-1)], f = b.s > a.s ? (d - a.s)/(b.s - a.s) : 0;
+          ctx.beginPath(); ctx.arc(a.x + (b.x - a.x)*f, a.y + (b.y - a.y)*f, r, 0, Math.PI*2); ctx.fill();
+        }
+      }
+    }
+  }
+  // homes and their labels
+  const ms = 3.4*u*(0.75 + 0.25*W), lf = s => smallFont(s, true), ls = 1.9*u*S.smallSize;
+  [0, 1].forEach(i => {
+    const h = S.homes[i]; if(!h) return;
+    const [x, y] = toPx([h.lat, h.lon]);
+    if(S.routeOn) drawHome(ctx, x, y, ms, S.homeStyle, col, P.bg);
+    const name = (S.names[i] || '').trim();
+    if(S.routeOn && name){
+      const t = S.upper ? name.toLocaleUpperCase('de-CH') : name;
+      const w = tmeasure(ctx, lf, ls, t).w, right = x + ms*0.7 + w < box.x + box.w - 2*u;
+      haloText(ctx, lf, ls, t, right ? x + ms*0.62 : x - ms*0.62, y + ls*0.36, right ? 'left' : 'right', P.text, P.bg);
+    }
+  });
+  // editing handles (preview only)
+  if(mode === 'preview' && editMode){
+    const r = 5.5*previewDpr();
+    ctx.lineWidth = 2*previewDpr();
+    S.route.forEach(p => { const [x, y] = toPx(p); ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.strokeStyle = col; ctx.stroke(); });
+    [0, 1].forEach(i => { const h = S.homes[i]; if(!h) return; const [x, y] = toPx([h.lat, h.lon]); ctx.setLineDash([4*previewDpr(), 3*previewDpr()]); ctx.beginPath(); ctx.arc(x, y, ms*0.8, 0, Math.PI*2); ctx.strokeStyle = col; ctx.stroke(); ctx.setLineDash([]); });
+  }
+  ctx.restore();
+}
+
+/* ---- editing ---- */
+let editMode = null;        // null | 'A' | 'B' | 'path'
+const undoStack = [];
+function previewDpr(){ return canvas.width / (canvas.clientWidth || canvas.width); }
+function snapshot(){ undoStack.push(JSON.stringify({homes:S.homes, route:S.route})); if(undoStack.length > 60) undoStack.shift(); }
+function undo(){ const s = undoStack.pop(); if(!s) return; const o = JSON.parse(s); S.homes = o.homes; S.route = o.route; routeChanged(); }
+function routeChanged(){ save(); syncRouteUI(); requestRender(); }
+function eventToLatLon(e){
+  const r = canvas.getBoundingClientRect(), ratio = canvas.width / r.width;
+  const px = (e.clientX - r.left)*ratio, py = (e.clientY - r.top)*ratio;
+  return [y2lat(lastMap.top + (py - lastMap.by)/lastMap.k), x2lon(lastMap.left + (px - lastMap.bx)/lastMap.k)];
+}
+function llToCanvas(p){ return [lastMap.bx + (lon2x(p[1]) - lastMap.left)*lastMap.k, lastMap.by + (lat2y(p[0]) - lastMap.top)*lastMap.k]; }
+function hitHandle(e){
+  if(!lastMap || !lastMap.bx && lastMap.bx !== 0) return null;
+  const r = canvas.getBoundingClientRect(), ratio = canvas.width / r.width;
+  const px = (e.clientX - r.left)*ratio, py = (e.clientY - r.top)*ratio, lim = 20*ratio;
+  let best = null, bd = lim;
+  S.route.forEach((p, i) => { const [x, y] = llToCanvas(p), d = Math.hypot(x - px, y - py); if(d < bd){ bd = d; best = {type:'wp', i}; } });
+  [0, 1].forEach(i => { const h = S.homes[i]; if(!h) return; const [x, y] = llToCanvas([h.lat, h.lon]), d = Math.hypot(x - px, y - py); if(d < bd){ bd = d; best = {type:'home', i}; } });
+  return best;
+}
+// Puts a new point where it adds the least detour, so taps can come in any order
+function insertPoint(p){
+  const P = q => [lon2x(q[1]), lat2y(q[0])], d = (a, b) => Math.hypot(a[0]-b[0], a[1]-b[1]);
+  const A = S.homes[0] && P([S.homes[0].lat, S.homes[0].lon]), B = S.homes[1] && P([S.homes[1].lat, S.homes[1].lon]);
+  const R = S.route.map(P), X = P(p);
+  let best = R.length, bc = Infinity;
+  for(let j = 0; j <= R.length; j++){
+    const prev = j ? R[j-1] : A, next = j < R.length ? R[j] : B;
+    const c = prev && next ? d(prev, X) + d(X, next) - d(prev, next) : prev ? d(prev, X) : next ? d(X, next) : 0;
+    if(c < bc - 1e-12){ bc = c; best = j; }
+  }
+  S.route.splice(best, 0, p);
+}
+function setHome(i, lat, lon, label){
+  snapshot();
+  S.homes[i] = {lat, lon, label: label || ''};
+  routeChanged();
+}
+function setEditMode(m){
+  editMode = m;
+  canvas.classList.toggle('editing', !!m);
+  const bar = $('#modeBar');
+  if(m){
+    $('#modeText').textContent = m === 'A' ? 'Tap the poster where home A is' : m === 'B' ? 'Tap the poster where home B is'
+      : 'Tap along your way from A to B. Drag a point to move it, tap it to remove it.';
+    bar.hidden = false;
+  } else bar.hidden = true;
+  syncRouteUI(); requestRender();
+}
+function handleTap(e){
+  const ll = eventToLatLon(e);
+  if(editMode === 'A' || editMode === 'B'){
+    const i = editMode === 'A' ? 0 : 1;
+    setHome(i, ll[0], ll[1]);
+    $(i ? '#homeB' : '#homeA').value = '';
+    setEditMode(!S.homes[1] ? 'B' : !S.homes[0] ? 'A' : 'path');
+  } else if(editMode === 'path'){
+    snapshot(); insertPoint(ll); routeChanged();
+  }
+}
+function fitRoute(){
+  const pts = routeLatLon(); if(!pts.length || S.cx == null) return;
+  const xs = pts.map(p => lon2x(p[1])), ys = pts.map(p => lat2y(p[0]));
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const {w, h} = paperMM(), g = layoutGeo(w, h), aspect = g.map.w/g.map.h;
+  const [fx0, fx1, fy0, fy1] = S.layout === 'fade' ? [0.1, 0.9, 0.1, 0.62] : S.layout === 'label' ? [0.1, 0.9, 0.08, 0.68]
+    : S.layout === 'circle' ? [0.2, 0.8, 0.2, 0.8] : [0.1, 0.9, 0.1, 0.9];
+  const lat = y2lat((y0 + y1)/2), cos = Math.cos(lat*Math.PI/180);
+  if(pts.length > 1){
+    const normW = Math.max((x1 - x0)/(fx1 - fx0), (y1 - y0)/(fy1 - fy0)*aspect, 1e-7);
+    S.extentKm = clamp(normW*EARTH*cos/1000, 0.5, 40);
+  }
+  const nW = S.extentKm*1000/cos/EARTH, nH = nW/aspect;
+  S.cx = (x0 + x1)/2 - nW*((fx0 + fx1)/2 - 0.5);
+  S.cy = (y0 + y1)/2 - nH*((fy0 + fy1)/2 - 0.5);
+  syncExtent(); requestRender(); onViewSettled();
+}
+function homeVisible(i){
+  const h = S.homes[i]; if(!h || !lastMap) return true;
+  const [x, y] = llToCanvas([h.lat, h.lon]);
+  return x > 0 && y > 0 && x < canvas.width && y < canvas.height;
+}
+function syncRouteUI(){
+  $('#drawBtn').setAttribute('aria-pressed', String(editMode === 'path'));
+  $('#drawBtn').textContent = editMode === 'path' ? 'Done drawing' : 'Draw the way';
+  $('#undoBtn').disabled = !undoStack.length;
+  $('#clearBtn').disabled = !S.route.length && !S.homes[0] && !S.homes[1];
+  document.querySelectorAll('[data-place]').forEach(b => {
+    const i = +b.dataset.place, active = editMode === (i ? 'B' : 'A');
+    b.setAttribute('aria-pressed', String(active));
+    b.textContent = active ? 'Tap the poster…' : S.homes[i] ? 'Move on map' : 'Tap on map';
+    b.closest('.home-row').classList.toggle('set', !!S.homes[i]);
+  });
+  ['#homeA', '#homeB'].forEach((sel, i) => { const el = $(sel); el.placeholder = S.homes[i] ? (S.homes[i].label || 'Set on the map') : `Address of home ${i ? 'B' : 'A'}`; });
+  $('#routeColor').value = routeColor();
+  $('#routeColorAuto').setAttribute('aria-pressed', String(!S.routeColor));
+  if(document.activeElement !== $('#nameA')) $('#nameA').value = S.names[0] || '';
+  if(document.activeElement !== $('#nameB')) $('#nameB').value = S.names[1] || '';
+  const n = (S.homes[0] ? 1 : 0) + (S.homes[1] ? 1 : 0), m = routeMeters();
+  $('#v-route').textContent = n || S.route.length ? `${n} of 2 homes${S.route.length ? ' · ' + S.route.length + ' points' : ''}${m ? ' · ' + fmtLen(m) : ''}` : '';
+}
+function homeSearch(input, i){
+  const list = input.parentElement.querySelector('.results');
+  let timer = null, seq = 0, items = [], idx = -1;
+  const hide = () => { list.hidden = true; };
+  const show = msg => {
+    list.innerHTML = '';
+    if(msg){ const li = document.createElement('li'); li.className = 'r-empty'; li.textContent = msg; list.appendChild(li); }
+    items.forEach((r, k) => {
+      const li = document.createElement('li'); li.setAttribute('role', 'option'); li.setAttribute('aria-selected', String(k === idx));
+      li.innerHTML = '<span class="r-name"></span><span class="r-kind"></span>';
+      li.children[0].textContent = r.label; li.children[1].textContent = KIND_LABEL[r.kind] || '';
+      li.addEventListener('mousedown', ev => { ev.preventDefault(); pick(k); });
+      list.appendChild(li);
+    });
+    list.hidden = false;
+  };
+  const pick = k => {
+    const r = items[k]; if(!r) return;
+    hide(); input.value = ''; input.blur();
+    setHome(i, r.lat, r.lon, r.label);
+    if(!homeVisible(i) || (S.homes[0] && S.homes[1] && (!homeVisible(0) || !homeVisible(1)))) fitRoute();
+  };
+  const run = async v => {
+    const my = ++seq;
+    try{
+      const res = await geoSearch(v, 'address,gazetteer', 10);
+      if(my !== seq) return;
+      items = rankResults(res, v).slice(0, 7); idx = items.length ? 0 : -1;
+      items.length ? show() : show('No address found. Try street, number and town.');
+    } catch(e){ if(my === seq){ items = []; show("Can't reach the swisstopo search."); } }
+  };
+  input.addEventListener('input', () => { clearTimeout(timer); const v = input.value.trim(); if(v.length < 3){ items = []; hide(); return; } timer = setTimeout(() => run(v), 250); });
+  input.addEventListener('keydown', e => {
+    if(e.key === 'ArrowDown' && items.length){ e.preventDefault(); idx = (idx + 1) % items.length; show(); }
+    else if(e.key === 'ArrowUp' && items.length){ e.preventDefault(); idx = (idx - 1 + items.length) % items.length; show(); }
+    else if(e.key === 'Enter'){ e.preventDefault(); if(!list.hidden && idx >= 0) pick(idx); }
+    else if(e.key === 'Escape') hide();
+  });
+  input.addEventListener('blur', () => setTimeout(hide, 120));
+}
+homeSearch($('#homeA'), 0);
+homeSearch($('#homeB'), 1);
+document.querySelectorAll('[data-place]').forEach(b => b.onclick = () => { const m = +b.dataset.place ? 'B' : 'A'; setEditMode(editMode === m ? null : m); });
+$('#drawBtn').onclick = () => setEditMode(editMode === 'path' ? null : 'path');
+$('#modeDone').onclick = () => setEditMode(null);
+$('#undoBtn').onclick = undo;
+$('#clearBtn').onclick = () => {
+  if(clearArmed){ snapshot(); S.route = []; S.homes = [null, null]; clearArmed = false; $('#clearBtn').textContent = 'Clear'; routeChanged(); return; }
+  clearArmed = true; $('#clearBtn').textContent = 'Clear all?';
+  setTimeout(() => { clearArmed = false; $('#clearBtn').textContent = 'Clear'; }, 3000);
+};
+let clearArmed = false;
+$('#fitRoute').onclick = fitRoute;
+$('#routeColor').addEventListener('input', e => { S.routeColor = e.target.value; save(); syncRouteUI(); requestRender(); });
+$('#routeColorAuto').onclick = () => { S.routeColor = null; save(); syncRouteUI(); requestRender(); };
+$('#nameA').addEventListener('input', e => { S.names[0] = e.target.value; save(); requestRender(); });
+$('#nameB').addEventListener('input', e => { S.names[1] = e.target.value; save(); requestRender(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && editMode) setEditMode(null); });
 
 /* notices */
 function showNotice(html, retry){

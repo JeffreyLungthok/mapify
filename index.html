@@ -158,10 +158,16 @@ details.sub[open]>summary{margin-bottom:10px}
 .foot a{color:inherit}
 .linkbtn{border:0;background:none;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12px;justify-self:start}
 
-.homes{display:grid;gap:8px}
-.home-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}
-.home-badge{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 12px/1 var(--mono);background:var(--chip-on);color:var(--chip-on-ink)}
-.home-row.set .home-badge{background:var(--accent);color:var(--accent-ink)}
+.places{display:grid;gap:8px}
+.place-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto 34px;gap:7px 8px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px}
+.place-row .p-name{height:34px;font-size:13px;padding-inline:10px}
+.place-row .p-way{justify-self:stretch;white-space:nowrap;height:34px}
+.home-badge{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 11px/1 var(--mono);background:var(--chip-on);color:var(--chip-on-ink)}
+.place-row.set .home-badge{background:var(--accent);color:var(--accent-ink)}
+.icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;font-size:16px;line-height:1;padding:0}
+.icon-btn:disabled{opacity:.3;cursor:default}
+.place-row .p-icon{width:26px;height:26px;border-radius:50%;color:var(--accent);border-color:var(--line)}
+.add-place{height:40px;font-size:13px;border-style:dashed;color:var(--muted)}
 .search.mini input{height:38px;font-size:14px;padding-left:12px;background-image:none}
 .btn.small{height:38px;font-size:12.5px;padding-inline:10px;white-space:nowrap}
 .btn[aria-pressed=true]{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
@@ -259,26 +265,16 @@ details.sub[open]>summary{margin-bottom:10px}
     </details>
 
     <details class="sec" open id="sec-route">
-      <summary><span class="sec-t">Two homes &amp; your way</span><span class="sec-v" id="v-route"></span></summary>
+      <summary><span class="sec-t">Places &amp; your way</span><span class="sec-v" id="v-route"></span></summary>
       <div class="sec-b">
-        <div class="homes">
-          <div class="home-row">
-            <span class="home-badge" aria-hidden="true">A</span>
-            <div class="search mini"><input type="text" id="homeA" placeholder="Address of home A" autocomplete="off" spellcheck="false" aria-label="Address of home A"><ul class="results" role="listbox" hidden></ul></div>
-            <button type="button" class="btn small" data-place="0">Tap on map</button>
-          </div>
-          <div class="home-row">
-            <span class="home-badge" aria-hidden="true">B</span>
-            <div class="search mini"><input type="text" id="homeB" placeholder="Address of home B" autocomplete="off" spellcheck="false" aria-label="Address of home B"><ul class="results" role="listbox" hidden></ul></div>
-            <button type="button" class="btn small" data-place="1">Tap on map</button>
-          </div>
-        </div>
+        <div class="places" id="places"></div>
+        <button type="button" class="btn add-place" id="addPlace">+ Add place</button>
         <div class="route-actions">
           <button type="button" class="btn" id="drawBtn" aria-pressed="false">Draw the way</button>
           <button type="button" class="btn" id="undoBtn">Undo</button>
           <button type="button" class="btn" id="clearBtn">Clear</button>
         </div>
-        <p class="note" id="routeHint">Set both homes, then tap along the way you walk. Drag a point to move it, tap it to remove it.</p>
+        <p class="note" id="routeHint">Add as many places as you like. The way runs through the places marked “On the way”, in list order. Tap along it to draw it; drag a point to move it, tap it to remove it.</p>
         <div class="field">
           <div class="field-h"><span>Line style</span></div>
           <div class="seg" data-seg="routeStyle"><button type="button" data-v="worn">Worn path</button><button type="button" data-v="bold">Bold</button><button type="button" data-v="steps">Footsteps</button><button type="button" data-v="dots">Dots</button></div>
@@ -294,12 +290,8 @@ details.sub[open]>summary{margin-bottom:10px}
           </div>
         </div>
         <div class="field">
-          <div class="field-h"><span>Home markers</span></div>
-          <div class="seg" data-seg="homeStyle"><button type="button" data-v="house">House</button><button type="button" data-v="heart">Heart</button><button type="button" data-v="dot">Dot</button></div>
-        </div>
-        <div class="two">
-          <div class="field"><div class="field-h"><label for="nameA">Label at A</label></div><input type="text" id="nameA" placeholder="optional"></div>
-          <div class="field"><div class="field-h"><label for="nameB">Label at B</label></div><input type="text" id="nameB" placeholder="optional"></div>
+          <div class="field-h"><span>Set all markers</span></div>
+          <div class="seg" data-seg="homeStyle"><button type="button" data-v="house">House</button><button type="button" data-v="heart">Heart</button><button type="button" data-v="dot">Dot</button><button type="button" data-v="star">Star</button></div>
         </div>
         <div class="chips">
           <button type="button" class="chip" data-toggle="routeOn">Show on poster</button>
@@ -585,7 +577,8 @@ const DEFAULTS = {
   layout:'fade', paper:'A3', orient:'portrait', margin:0, hairline:false, fade:true,
   frame:'none', mat:8, wall:'auto',
   dpi:300, exportFrame:false, fontTouched:false,
-  homes:[null, null], names:['', ''], route:[], routeOn:true, routeStyle:'worn', routeWeight:1, routeSmooth:true, routeColor:null,
+  places:[{id:'a', lat:null, lon:null, addr:'', name:'', icon:'house', onWay:true}, {id:'b', lat:null, lon:null, addr:'', name:'', icon:'house', onWay:true}],
+  route:[], routeOn:true, routeStyle:'worn', routeWeight:1, routeSmooth:true, routeColor:null,
   homeStyle:'house', showRouteLen:false
 };
 
@@ -1512,7 +1505,7 @@ canvas.addEventListener('pointermove', e => {
   if(gesture.mode === 'handle'){
     if(!down || !down.moved) return;
     const ll = eventToLatLon(e), h = gesture.h;
-    if(h.type === 'wp') S.route[h.i] = ll; else S.homes[h.i] = Object.assign({}, S.homes[h.i], {lat:ll[0], lon:ll[1], label:''});
+    if(h.type === 'wp'){ S.route[h.i][0] = ll[0]; S.route[h.i][1] = ll[1]; } else { const q = placeById(h.id); if(q){ q.lat = ll[0]; q.lon = ll[1]; q.addr = ''; } }
     requestRender(); return;
   }
   const ratio = canvas.width / canvas.clientWidth;
@@ -1705,10 +1698,22 @@ $('#pngBtn').onclick = () => exportFile('png');
    ========================================================================= */
 let saveTimer = null;
 function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(() => { try{ localStorage.setItem(STORE, JSON.stringify(S)); }catch(e){} }, 300); }
+// Saved state from the two-homes version becomes places A and B
+function migrate(j){
+  if(!Array.isArray(j.places) && Array.isArray(j.homes)){
+    const icon = j.homeStyle || 'house', names = Array.isArray(j.names) ? j.names : [];
+    j.places = [0, 1].map(i => { const h = j.homes[i]; return {id: i ? 'b' : 'a', lat: h ? h.lat : null, lon: h ? h.lon : null, addr: (h && h.label) || '', name: names[i] || '', icon, onWay: true}; });
+    const first = j.homes[0] ? 'a' : null;
+    j.route = (Array.isArray(j.route) ? j.route : []).map(p => [p[0], p[1], first]);
+  }
+  if(Array.isArray(j.route)) j.route = j.route.filter(p => Array.isArray(p) && isFinite(p[0]) && isFinite(p[1])).map(p => [+p[0], +p[1], p.length > 2 ? p[2] : null]);
+  if(Array.isArray(j.places)) j.places = j.places.filter(p => p && typeof p.id === 'string');
+}
 function restore(){
   try{
     const j = JSON.parse(localStorage.getItem(STORE) || 'null');
     if(j && typeof j === 'object'){
+      migrate(j);
       const base = clone(DEFAULTS);
       for(const k of Object.keys(base)) if(k in j) base[k] = (k === 'layers') ? Object.assign(base.layers, j.layers) : j[k];
       S = base;
@@ -1755,6 +1760,7 @@ document.querySelectorAll('.seg[data-seg]').forEach(seg => {
     const key = seg.dataset.seg, v = key === 'dpi' ? +b.dataset.v : b.dataset.v;
     S[key] = v;
     if(key === 'weight') S.fontTouched = true;
+    if(key === 'homeStyle') S.places.forEach(p => { p.icon = v; });
     syncUI(); save();
     if(key === 'orient') layoutPreview(); else requestRender();
   });
@@ -1860,7 +1866,7 @@ for(const name of TRY){
   tryEl.appendChild(b);
 }
 $('#resetBtn').onclick = () => {
-  const keep = {place:S.place, cx:S.cx, cy:S.cy, extentKm:S.extentKm, homes:S.homes, names:S.names, route:S.route};
+  const keep = {place:S.place, cx:S.cx, cy:S.cy, extentKm:S.extentKm, places:S.places, route:S.route};
   S = Object.assign(clone(DEFAULTS), keep);
   syncUI(); save(); layoutPreview();
 };
@@ -1896,17 +1902,36 @@ function syncUI(){
 }
 
 /* =========================================================================
-   Two homes and the way between them
+   Places and the way between them
+   S.places: [{id, lat, lon, addr, name, icon, onWay}]  (lat null = not set yet)
+   S.route:  [[lat, lon, afterId], ...] drawn points in way order; afterId is the
+             on-the-way place the point follows (null = before the first one)
    ========================================================================= */
+const ICONS = ['house', 'heart', 'dot', 'star'];
+const ICON_NAMES = {house:'House', heart:'Heart', dot:'Dot', star:'Star'};
+function newPlace(onWay, id){ return {id: id || 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), lat:null, lon:null, addr:'', name:'', icon:S.homeStyle || 'house', onWay:!!onWay}; }
+function placeById(id){ return S.places.find(p => p.id === id); }
+function isSet(p){ return p && p.lat != null && p.lon != null; }
+function letterOf(i){ let s = '', n = i; do { s = String.fromCharCode(65 + n % 26) + s; n = Math.floor(n/26) - 1; } while(n >= 0); return s; }
+function wayPlaces(){ return S.places.filter(p => p.onWay && isSet(p)); }
 function routeColor(){ return S.routeColor || pal().accent || '#C8412C'; }
-// Every point of the way in order: home A, drawn points, home B (as [lat, lon])
-function routeLatLon(){
-  const pts = [];
-  if(S.homes[0]) pts.push([S.homes[0].lat, S.homes[0].lon]);
-  for(const p of S.route) pts.push(p);
-  if(S.homes[1]) pts.push([S.homes[1].lat, S.homes[1].lon]);
-  return pts;
+
+// The way as an ordered list of nodes: on-the-way places in list order, each followed by its drawn points
+function wayNodes(){
+  const wp = wayPlaces(), ids = new Set(wp.map(p => p.id)), groups = new Map([[null, []]]);
+  wp.forEach(p => groups.set(p.id, []));
+  S.route.forEach(pt => { const k = ids.has(pt[2]) ? pt[2] : null; groups.get(k).push(pt); });
+  const nodes = groups.get(null).map(pt => ({pt}));
+  for(const p of wp){ nodes.push({place:p}); for(const pt of groups.get(p.id)) nodes.push({pt}); }
+  return nodes;
 }
+function setRouteFromNodes(nodes){
+  let after = null; const out = [];
+  for(const n of nodes){ if(n.place) after = n.place.id; else out.push([n.pt[0], n.pt[1], after]); }
+  S.route = out;
+}
+const nodeLL = n => n.place ? [n.place.lat, n.place.lon] : [n.pt[0], n.pt[1]];
+function routeLatLon(){ return wayNodes().map(nodeLL); }
 function haversine(a, b){
   const R = 6371008.8, r = Math.PI/180, dLat = (b[0]-a[0])*r, dLon = (b[1]-a[1])*r;
   const h = Math.sin(dLat/2)**2 + Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLon/2)**2;
@@ -1914,6 +1939,48 @@ function haversine(a, b){
 }
 function routeMeters(){ const p = routeLatLon(); let m = 0; for(let i = 1; i < p.length; i++) m += haversine(p[i-1], p[i]); return m; }
 function fmtLen(m){ return m >= 1000 ? `${(m/1000).toFixed(m >= 10000 ? 0 : 1)} km` : `${Math.round(m/10)*10} m`; }
+const toNorm = q => [lon2x(q[1]), lat2y(q[0])];
+const dist2 = (a, b) => Math.hypot(a[0]-b[0], a[1]-b[1]);
+
+// A place leaves the way: its drawn points now follow the previous on-the-way place
+function leaveWay(id){
+  const wp = wayPlaces(), i = wp.findIndex(p => p.id === id);
+  if(i < 0) return;
+  const prev = i > 0 ? wp[i-1].id : null;
+  S.route.forEach(pt => { if(pt[2] === id) pt[2] = prev; });
+}
+// A place joins the way: split the points around it where the way gets shortest
+function joinWay(id){
+  const wp = wayPlaces(), i = wp.findIndex(p => p.id === id);
+  if(i < 0) return;
+  const prevKey = i > 0 ? wp[i-1].id : null, cur = wp[i], next = wp[i+1];
+  const pts = S.route.filter(pt => pt[2] === prevKey);
+  if(!pts.length) return;
+  const C = toNorm([cur.lat, cur.lon]), A = i > 0 ? toNorm([wp[i-1].lat, wp[i-1].lon]) : null, N = next ? toNorm([next.lat, next.lon]) : null;
+  const P = pts.map(toNorm), len = arr => { let s = 0; for(let j = 1; j < arr.length; j++) s += dist2(arr[j-1], arr[j]); return s; };
+  let best = pts.length, bc = Infinity;
+  for(let k = 0; k <= pts.length; k++){
+    const c = len([A, ...P.slice(0, k), C].filter(Boolean)) + len([C, ...P.slice(k), N].filter(Boolean));
+    if(c < bc - 1e-12){ bc = c; best = k; }
+  }
+  pts.slice(best).forEach(pt => { pt[2] = cur.id; });
+  setRouteFromNodes(wayNodes());
+}
+// Puts a new point where it adds the least detour, so taps can come in any order
+function insertPoint(ll){
+  const nodes = wayNodes(), X = toNorm(ll), N = nodes.map(n => toNorm(nodeLL(n)));
+  let best = nodes.length, bc = Infinity;
+  for(let g = 0; g <= nodes.length; g++){
+    const prev = g ? N[g-1] : null, next = g < N.length ? N[g] : null;
+    if(!prev && next && nodes[g].place && nodes.some((n, j) => j > g && n.place)) continue;     // not before the first place
+    if(!next && prev && nodes[g-1].place && nodes.some((n, j) => j < g-1 && n.place)) continue; // not past the last place
+    const c = prev && next ? dist2(prev, X) + dist2(X, next) - dist2(prev, next) : prev ? dist2(prev, X) : next ? dist2(X, next) : 0;
+    if(c < bc - 1e-12){ bc = c; best = g; }
+  }
+  if(!isFinite(bc)) best = nodes.length;
+  nodes.splice(best, 0, {pt:[ll[0], ll[1], null]});
+  setRouteFromNodes(nodes);
+}
 
 // Keeps the drawn segments straight (they follow streets) and rounds each corner
 function roundCorners(pts, radius){
@@ -1947,9 +2014,9 @@ function resample(poly, step){
     while(d <= len){ push(a[0] + tx*d, a[1] + ty*d, tx, ty, s + d); d += step; }
     carry = len - (d - step); s += len;
   }
+  if(!out.length) return out;
   const a = poly[poly.length-2], b = poly[poly.length-1], len = Math.hypot(b[0]-a[0], b[1]-a[1]) || 1;
   push(b[0], b[1], (b[0]-a[0])/len, (b[1]-a[1])/len, s);
-  // smooth the tangents a little so offsets do not kink at corners
   for(let i = 1; i < out.length - 1; i++){
     let tx = out[i-1].tx + out[i].tx*2 + out[i+1].tx, ty = out[i-1].ty + out[i].ty*2 + out[i+1].ty; const l = Math.hypot(tx, ty) || 1;
     out[i].nx = -ty/l; out[i].ny = tx/l; out[i].tx = tx/l; out[i].ty = ty/l;
@@ -1969,6 +2036,9 @@ function homeShape(style, s){
     p.bezierCurveTo(0.42*s, -0.62*s, 0.62*s, 0.02*s, 0, 0.42*s);
   } else if(style === 'dot'){
     p.arc(0, 0, 0.36*s, 0, Math.PI*2);
+  } else if(style === 'star'){
+    for(let k = 0; k < 10; k++){ const r = (k % 2 ? 0.2 : 0.48)*s, a = -Math.PI/2 + k*Math.PI/5; k ? p.lineTo(Math.cos(a)*r, Math.sin(a)*r + 0.04*s) : p.moveTo(Math.cos(a)*r, Math.sin(a)*r + 0.04*s); }
+    p.closePath();
   } else {
     p.moveTo(-0.4*s, 0.42*s); p.lineTo(-0.4*s, -0.06*s); p.lineTo(0, -0.46*s); p.lineTo(0.4*s, -0.06*s); p.lineTo(0.4*s, 0.42*s); p.closePath();
   }
@@ -1993,10 +2063,10 @@ function haloText(ctx, fontFn, size, text, x, y, align, fill, halo){
   ctx.restore();
 }
 function drawRoute(ctx, box, v, P, u, mode){
-  const ll = routeLatLon();
-  if(!ll.length) return;
+  const placed = S.places.filter(isSet);
+  if(!placed.length && !S.route.length) return;
   const toPx = p => [box.x + (lon2x(p[1]) - v.left)*v.k, box.y + (lat2y(p[0]) - v.top)*v.k];
-  const pts = ll.map(toPx);
+  const pts = routeLatLon().map(toPx);
   const col = routeColor(), W = S.routeWeight;
   ctx.save();
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
@@ -2045,35 +2115,45 @@ function drawRoute(ctx, box, v, P, u, mode){
       }
     }
   }
-  // homes and their labels
+  // places and their labels
   const ms = 3.4*u*(0.75 + 0.25*W), lf = s => smallFont(s, true), ls = 1.9*u*S.smallSize;
-  [0, 1].forEach(i => {
-    const h = S.homes[i]; if(!h) return;
-    const [x, y] = toPx([h.lat, h.lon]);
-    if(S.routeOn) drawHome(ctx, x, y, ms, S.homeStyle, col, P.bg);
-    const name = (S.names[i] || '').trim();
-    if(S.routeOn && name){
+  if(S.routeOn) for(const p of placed){
+    const [x, y] = toPx([p.lat, p.lon]);
+    drawHome(ctx, x, y, ms, ICONS.includes(p.icon) ? p.icon : S.homeStyle, col, P.bg);
+    const name = (p.name || '').trim();
+    if(name){
       const t = S.upper ? name.toLocaleUpperCase('de-CH') : name;
       const w = tmeasure(ctx, lf, ls, t).w, right = x + ms*0.7 + w < box.x + box.w - 2*u;
       haloText(ctx, lf, ls, t, right ? x + ms*0.62 : x - ms*0.62, y + ls*0.36, right ? 'left' : 'right', P.text, P.bg);
     }
-  });
+  }
   // editing handles (preview only)
   if(mode === 'preview' && editMode){
-    const r = 5.5*previewDpr();
-    ctx.lineWidth = 2*previewDpr();
+    const dp = previewDpr(), r = 5.5*dp;
+    ctx.lineWidth = 2*dp;
     S.route.forEach(p => { const [x, y] = toPx(p); ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.strokeStyle = col; ctx.stroke(); });
-    [0, 1].forEach(i => { const h = S.homes[i]; if(!h) return; const [x, y] = toPx([h.lat, h.lon]); ctx.setLineDash([4*previewDpr(), 3*previewDpr()]); ctx.beginPath(); ctx.arc(x, y, ms*0.8, 0, Math.PI*2); ctx.strokeStyle = col; ctx.stroke(); ctx.setLineDash([]); });
+    ctx.setLineDash([4*dp, 3*dp]); ctx.strokeStyle = col;
+    placed.forEach(p => { const [x, y] = toPx([p.lat, p.lon]); ctx.beginPath(); ctx.arc(x, y, ms*0.8, 0, Math.PI*2); ctx.stroke(); });
+    ctx.setLineDash([]);
+    // letters next to the places while editing, so the list and the map match up
+    const fs = 11*dp;
+    ctx.font = `600 ${fs}px ${'"IBM Plex Mono", ui-monospace, monospace'}`; ctx.textAlign = 'center';
+    S.places.forEach((p, i) => {
+      if(!isSet(p)) return;
+      const [x, y] = toPx([p.lat, p.lon]), lx = x - ms*0.75, ly = y - ms*0.75;
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(lx, ly, fs*0.8, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#FFFFFF'; ctx.fillText(letterOf(i), lx, ly + fs*0.36);
+    });
   }
   ctx.restore();
 }
 
 /* ---- editing ---- */
-let editMode = null;        // null | 'A' | 'B' | 'path'
+let editMode = null;        // null | {place: id} | 'path'
 const undoStack = [];
 function previewDpr(){ return canvas.width / (canvas.clientWidth || canvas.width); }
-function snapshot(){ undoStack.push(JSON.stringify({homes:S.homes, route:S.route})); if(undoStack.length > 60) undoStack.shift(); }
-function undo(){ const s = undoStack.pop(); if(!s) return; const o = JSON.parse(s); S.homes = o.homes; S.route = o.route; routeChanged(); }
+function snapshot(){ undoStack.push(JSON.stringify({places:S.places, route:S.route})); if(undoStack.length > 60) undoStack.shift(); }
+function undo(){ const s = undoStack.pop(); if(!s) return; const o = JSON.parse(s); S.places = o.places; S.route = o.route; routeChanged(); }
 function routeChanged(){ save(); syncRouteUI(); requestRender(); }
 function eventToLatLon(e){
   const r = canvas.getBoundingClientRect(), ratio = canvas.width / r.width;
@@ -2082,30 +2162,57 @@ function eventToLatLon(e){
 }
 function llToCanvas(p){ return [lastMap.bx + (lon2x(p[1]) - lastMap.left)*lastMap.k, lastMap.by + (lat2y(p[0]) - lastMap.top)*lastMap.k]; }
 function hitHandle(e){
-  if(!lastMap || !lastMap.bx && lastMap.bx !== 0) return null;
+  if(!lastMap || lastMap.bx == null) return null;
   const r = canvas.getBoundingClientRect(), ratio = canvas.width / r.width;
   const px = (e.clientX - r.left)*ratio, py = (e.clientY - r.top)*ratio, lim = 20*ratio;
   let best = null, bd = lim;
   S.route.forEach((p, i) => { const [x, y] = llToCanvas(p), d = Math.hypot(x - px, y - py); if(d < bd){ bd = d; best = {type:'wp', i}; } });
-  [0, 1].forEach(i => { const h = S.homes[i]; if(!h) return; const [x, y] = llToCanvas([h.lat, h.lon]), d = Math.hypot(x - px, y - py); if(d < bd){ bd = d; best = {type:'home', i}; } });
+  S.places.forEach(p => { if(!isSet(p)) return; const [x, y] = llToCanvas([p.lat, p.lon]), d = Math.hypot(x - px, y - py); if(d < bd){ bd = d; best = {type:'place', id:p.id}; } });
   return best;
 }
-// Puts a new point where it adds the least detour, so taps can come in any order
-function insertPoint(p){
-  const P = q => [lon2x(q[1]), lat2y(q[0])], d = (a, b) => Math.hypot(a[0]-b[0], a[1]-b[1]);
-  const A = S.homes[0] && P([S.homes[0].lat, S.homes[0].lon]), B = S.homes[1] && P([S.homes[1].lat, S.homes[1].lon]);
-  const R = S.route.map(P), X = P(p);
-  let best = R.length, bc = Infinity;
-  for(let j = 0; j <= R.length; j++){
-    const prev = j ? R[j-1] : A, next = j < R.length ? R[j] : B;
-    const c = prev && next ? d(prev, X) + d(X, next) - d(prev, next) : prev ? d(prev, X) : next ? d(X, next) : 0;
-    if(c < bc - 1e-12){ bc = c; best = j; }
-  }
-  S.route.splice(best, 0, p);
-}
-function setHome(i, lat, lon, label){
+function setPlace(id, lat, lon, addr){
+  const p = placeById(id); if(!p) return;
   snapshot();
-  S.homes[i] = {lat, lon, label: label || ''};
+  const wasOnWay = p.onWay && isSet(p);
+  p.lat = lat; p.lon = lon; p.addr = addr || '';
+  if(p.onWay && !wasOnWay) joinWay(id);
+  routeChanged();
+}
+function addPlace(){
+  snapshot();
+  const p = newPlace(false); S.places.push(p);
+  routeChanged();
+  const row = placesEl.querySelector(`[data-id="${p.id}"] .p-addr`); if(row) row.focus();
+}
+function removePlace(id){
+  snapshot();
+  leaveWay(id);
+  S.places = S.places.filter(p => p.id !== id);
+  setRouteFromNodes(wayNodes());
+  if(editMode && editMode.place === id) setEditMode(null);
+  routeChanged();
+}
+function toggleWay(id){
+  const p = placeById(id); if(!p) return;
+  snapshot();
+  if(p.onWay){ leaveWay(id); p.onWay = false; setRouteFromNodes(wayNodes()); }
+  else { p.onWay = true; joinWay(id); }
+  routeChanged();
+}
+function movePlaceUp(id){
+  const i = S.places.findIndex(p => p.id === id); if(i <= 0) return;
+  snapshot();
+  const p = S.places[i], onWay = p.onWay && isSet(p);
+  if(onWay) leaveWay(id);
+  S.places.splice(i, 1); S.places.splice(i - 1, 0, p);
+  setRouteFromNodes(wayNodes());
+  if(onWay) joinWay(id);
+  routeChanged();
+}
+function cycleIcon(id){
+  const p = placeById(id); if(!p) return;
+  const cur = ICONS.includes(p.icon) ? p.icon : S.homeStyle;
+  p.icon = ICONS[(ICONS.indexOf(cur) + 1) % ICONS.length];
   routeChanged();
 }
 function setEditMode(m){
@@ -2113,25 +2220,28 @@ function setEditMode(m){
   canvas.classList.toggle('editing', !!m);
   const bar = $('#modeBar');
   if(m){
-    $('#modeText').textContent = m === 'A' ? 'Tap the poster where home A is' : m === 'B' ? 'Tap the poster where home B is'
-      : 'Tap along your way from A to B. Drag a point to move it, tap it to remove it.';
+    const i = m.place ? S.places.findIndex(p => p.id === m.place) : -1;
+    $('#modeText').textContent = m.place ? `Tap the poster where place ${letterOf(i)} is`
+      : 'Tap along your way. Drag a point to move it, tap it to remove it.';
     bar.hidden = false;
   } else bar.hidden = true;
   syncRouteUI(); requestRender();
 }
 function handleTap(e){
   const ll = eventToLatLon(e);
-  if(editMode === 'A' || editMode === 'B'){
-    const i = editMode === 'A' ? 0 : 1;
-    setHome(i, ll[0], ll[1]);
-    $(i ? '#homeB' : '#homeA').value = '';
-    setEditMode(!S.homes[1] ? 'B' : !S.homes[0] ? 'A' : 'path');
+  if(editMode && editMode.place){
+    const id = editMode.place, p = placeById(id);
+    setPlace(id, ll[0], ll[1]);
+    const row = placesEl.querySelector(`[data-id="${id}"] .p-addr`); if(row) row.value = '';
+    const i = S.places.indexOf(p), nextEmpty = S.places.slice(i + 1).find(q => !isSet(q)) || S.places.slice(0, i).find(q => !isSet(q));
+    setEditMode(nextEmpty ? {place: nextEmpty.id} : (p && p.onWay && wayPlaces().length >= 2 ? 'path' : null));
   } else if(editMode === 'path'){
     snapshot(); insertPoint(ll); routeChanged();
   }
 }
 function fitRoute(){
-  const pts = routeLatLon(); if(!pts.length || S.cx == null) return;
+  const pts = S.places.filter(isSet).map(p => [p.lat, p.lon]).concat(S.route.map(p => [p[0], p[1]]));
+  if(!pts.length || S.cx == null) return;
   const xs = pts.map(p => lon2x(p[1])), ys = pts.map(p => lat2y(p[0]));
   const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
   const {w, h} = paperMM(), g = layoutGeo(w, h), aspect = g.map.w/g.map.h;
@@ -2147,31 +2257,83 @@ function fitRoute(){
   S.cy = (y0 + y1)/2 - nH*((fy0 + fy1)/2 - 0.5);
   syncExtent(); requestRender(); onViewSettled();
 }
-function homeVisible(i){
-  const h = S.homes[i]; if(!h || !lastMap) return true;
-  const [x, y] = llToCanvas([h.lat, h.lon]);
+function placeVisible(p){
+  if(!isSet(p) || !lastMap) return true;
+  const [x, y] = llToCanvas([p.lat, p.lon]);
   return x > 0 && y > 0 && x < canvas.width && y < canvas.height;
 }
+
+/* ---- the list of places in the panel ---- */
+const placesEl = $('#places');
+const ICON_SVG = {
+  house:'<path d="M3 14V7.6L8 3l5 4.6V14z"/><rect x="6.9" y="10" width="2.2" height="4" fill="var(--panel)"/>',
+  heart:'<path d="M8 14C2.6 10.3 2.4 5.2 5.4 4.2 6.8 3.8 7.7 4.6 8 5.4c.3-.8 1.2-1.6 2.6-1.2 3 1 2.8 6.1-2.6 9.8z"/>',
+  dot:'<circle cx="8" cy="8.5" r="5.2"/><circle cx="8" cy="8.5" r="2" fill="var(--panel)"/>',
+  star:'<path d="M8 2.4l1.7 3.9 4.2.4-3.2 2.8.9 4.1L8 11.5l-3.6 2.1.9-4.1-3.2-2.8 4.2-.4z"/>'
+};
+function buildPlaceRow(p){
+  const row = document.createElement('div');
+  row.className = 'place-row'; row.dataset.id = p.id;
+  row.innerHTML = `<span class="home-badge" aria-hidden="true"></span>
+    <div class="search mini"><input type="text" class="p-addr" autocomplete="off" spellcheck="false"><ul class="results" role="listbox" hidden></ul></div>
+    <button type="button" class="btn small p-tap"></button>
+    <button type="button" class="icon-btn p-del">×</button>
+    <button type="button" class="icon-btn p-icon"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"></svg></button>
+    <input type="text" class="p-name" placeholder="Label (optional)">
+    <button type="button" class="chip p-way">On the way</button>
+    <button type="button" class="icon-btn p-up">↑</button>`;
+  const id = p.id;
+  row.querySelector('.p-tap').onclick = () => setEditMode(editMode && editMode.place === id ? null : {place:id});
+  row.querySelector('.p-del').onclick = () => removePlace(id);
+  row.querySelector('.p-icon').onclick = () => cycleIcon(id);
+  row.querySelector('.p-way').onclick = () => toggleWay(id);
+  row.querySelector('.p-up').onclick = () => movePlaceUp(id);
+  row.querySelector('.p-name').addEventListener('input', e => { const q = placeById(id); if(q){ q.name = e.target.value; save(); requestRender(); } });
+  placeSearch(row.querySelector('.p-addr'), id);
+  return row;
+}
+function renderPlaces(){
+  const rows = new Map([...placesEl.children].map(r => [r.dataset.id, r]));
+  S.places.forEach((p, i) => {
+    let row = rows.get(p.id);
+    if(!row) row = buildPlaceRow(p);
+    rows.delete(p.id);
+    if(placesEl.children[i] !== row) placesEl.insertBefore(row, placesEl.children[i] || null);
+    const L = letterOf(i), active = !!(editMode && editMode.place === p.id), icon = ICONS.includes(p.icon) ? p.icon : S.homeStyle;
+    row.classList.toggle('set', isSet(p));
+    row.querySelector('.home-badge').textContent = L;
+    const addr = row.querySelector('.p-addr');
+    addr.placeholder = isSet(p) ? (p.addr || 'Set on the map') : `Address of place ${L}`;
+    addr.setAttribute('aria-label', `Address of place ${L}`);
+    const tap = row.querySelector('.p-tap');
+    tap.setAttribute('aria-pressed', String(active));
+    tap.textContent = active ? 'Tap the poster…' : isSet(p) ? 'Move on map' : 'Tap on map';
+    row.querySelector('.p-del').setAttribute('aria-label', `Remove place ${L}`);
+    const ib = row.querySelector('.p-icon');
+    ib.querySelector('svg').innerHTML = ICON_SVG[icon];
+    ib.setAttribute('aria-label', `Marker for place ${L}: ${ICON_NAMES[icon]}. Tap to change`); ib.title = `${ICON_NAMES[icon]} – tap to change`;
+    const nm = row.querySelector('.p-name');
+    if(document.activeElement !== nm) nm.value = p.name || '';
+    nm.setAttribute('aria-label', `Label for place ${L}`);
+    const way = row.querySelector('.p-way');
+    way.setAttribute('aria-pressed', String(!!p.onWay));
+    const up = row.querySelector('.p-up');
+    up.disabled = i === 0; up.setAttribute('aria-label', `Move place ${L} up`);
+  });
+  for(const r of rows.values()) r.remove();
+}
 function syncRouteUI(){
+  renderPlaces();
   $('#drawBtn').setAttribute('aria-pressed', String(editMode === 'path'));
   $('#drawBtn').textContent = editMode === 'path' ? 'Done drawing' : 'Draw the way';
   $('#undoBtn').disabled = !undoStack.length;
-  $('#clearBtn').disabled = !S.route.length && !S.homes[0] && !S.homes[1];
-  document.querySelectorAll('[data-place]').forEach(b => {
-    const i = +b.dataset.place, active = editMode === (i ? 'B' : 'A');
-    b.setAttribute('aria-pressed', String(active));
-    b.textContent = active ? 'Tap the poster…' : S.homes[i] ? 'Move on map' : 'Tap on map';
-    b.closest('.home-row').classList.toggle('set', !!S.homes[i]);
-  });
-  ['#homeA', '#homeB'].forEach((sel, i) => { const el = $(sel); el.placeholder = S.homes[i] ? (S.homes[i].label || 'Set on the map') : `Address of home ${i ? 'B' : 'A'}`; });
+  $('#clearBtn').disabled = !S.route.length && !S.places.some(p => isSet(p) || p.name);
   $('#routeColor').value = routeColor();
   $('#routeColorAuto').setAttribute('aria-pressed', String(!S.routeColor));
-  if(document.activeElement !== $('#nameA')) $('#nameA').value = S.names[0] || '';
-  if(document.activeElement !== $('#nameB')) $('#nameB').value = S.names[1] || '';
-  const n = (S.homes[0] ? 1 : 0) + (S.homes[1] ? 1 : 0), m = routeMeters();
-  $('#v-route').textContent = n || S.route.length ? `${n} of 2 homes${S.route.length ? ' · ' + S.route.length + ' points' : ''}${m ? ' · ' + fmtLen(m) : ''}` : '';
+  const n = S.places.filter(isSet).length, w = wayPlaces().length, m = routeMeters();
+  $('#v-route').textContent = n || S.route.length ? `${n} place${n === 1 ? '' : 's'}${w ? ' · ' + w + ' on the way' : ''}${m ? ' · ' + fmtLen(m) : ''}` : '';
 }
-function homeSearch(input, i){
+function placeSearch(input, id){
   const list = input.parentElement.querySelector('.results');
   let timer = null, seq = 0, items = [], idx = -1;
   const hide = () => { list.hidden = true; };
@@ -2190,8 +2352,8 @@ function homeSearch(input, i){
   const pick = k => {
     const r = items[k]; if(!r) return;
     hide(); input.value = ''; input.blur();
-    setHome(i, r.lat, r.lon, r.label);
-    if(!homeVisible(i) || (S.homes[0] && S.homes[1] && (!homeVisible(0) || !homeVisible(1)))) fitRoute();
+    setPlace(id, r.lat, r.lon, r.label);
+    if(S.places.filter(isSet).some(p => !placeVisible(p))) fitRoute();
   };
   const run = async v => {
     const my = ++seq;
@@ -2211,23 +2373,22 @@ function homeSearch(input, i){
   });
   input.addEventListener('blur', () => setTimeout(hide, 120));
 }
-homeSearch($('#homeA'), 0);
-homeSearch($('#homeB'), 1);
-document.querySelectorAll('[data-place]').forEach(b => b.onclick = () => { const m = +b.dataset.place ? 'B' : 'A'; setEditMode(editMode === m ? null : m); });
+$('#addPlace').onclick = addPlace;
 $('#drawBtn').onclick = () => setEditMode(editMode === 'path' ? null : 'path');
 $('#modeDone').onclick = () => setEditMode(null);
 $('#undoBtn').onclick = undo;
+let clearArmed = false;
 $('#clearBtn').onclick = () => {
-  if(clearArmed){ snapshot(); S.route = []; S.homes = [null, null]; clearArmed = false; $('#clearBtn').textContent = 'Clear'; routeChanged(); return; }
+  if(clearArmed){
+    snapshot(); S.route = []; S.places = [newPlace(true), newPlace(true)];
+    clearArmed = false; $('#clearBtn').textContent = 'Clear'; setEditMode(null); routeChanged(); return;
+  }
   clearArmed = true; $('#clearBtn').textContent = 'Clear all?';
   setTimeout(() => { clearArmed = false; $('#clearBtn').textContent = 'Clear'; }, 3000);
 };
-let clearArmed = false;
 $('#fitRoute').onclick = fitRoute;
 $('#routeColor').addEventListener('input', e => { S.routeColor = e.target.value; save(); syncRouteUI(); requestRender(); });
 $('#routeColorAuto').onclick = () => { S.routeColor = null; save(); syncRouteUI(); requestRender(); };
-$('#nameA').addEventListener('input', e => { S.names[0] = e.target.value; save(); requestRender(); });
-$('#nameB').addEventListener('input', e => { S.names[1] = e.target.value; save(); requestRender(); });
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && editMode) setEditMode(null); });
 
 /* notices */
@@ -2253,6 +2414,7 @@ async function start(){
 }
 restore();
 syncUI();
+save();          // stores older saved settings in the current format
 loadTileJSON();
 new ResizeObserver(() => layoutPreview()).observe(wall);
 layoutPreview();
